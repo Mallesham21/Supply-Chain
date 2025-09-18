@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Supply Chain DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+</head>
+<body>
+  <h2>Supply Chain DApp</h2>
+
+  <button onclick="connectWallet()">Connect Wallet</button>
+  <button onclick="addProduct()">Add Product</button>
+  <button onclick="getProduct()">Get Product</button>
+
+  <p id="output"></p>
+
+  <script>
+      alert(window.ethereum)
+    const contractAddress = "0xd59bfcbeadfb1db42dced4d4c267a4a097a9dd12";
+
+    const abi = [
+      "function addProduct(string memory _name, string memory _origin, string memory _owner) public",
+      "function getProduct(uint _id) public view returns (uint, string memory, string memory, string memory)",
+      "function transferProduct(uint _id, string memory _newOwner) public"
+    ];
+
+    let provider, signer, contract;
+
+    async function connectWallet() {
+      if (!window.ethereum) return alert("MetaMask not found!");
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = provider.getSigner();
+      contract = new ethers.Contract(contractAddress, abi, signer);
+      document.getElementById("output").innerText = "Wallet connected!";
+    }
+
+    async function addProduct() {
+      const tx = await contract.addProduct("Tomato", "Farm A", "Farmer1");
+      await tx.wait();
+      document.getElementById("output").innerText = "Product added!";
+    }
+
+    async function getProduct() {
+      const result = await contract.getProduct(1);
+      document.getElementById("output").innerText =
+        `ID: ${result[0]}, Name: ${result[1]}, Origin: ${result[2]}, Owner: ${result[3]}`;
+    }
+  </script>
+</body>
+</html>
